@@ -27,7 +27,7 @@ class CommonInfo(models.Model):
         return json.loads(resp.text)
 
     @classmethod
-    def insert_data(cls, data):
+    def insert_data(cls, data=None):
         if not data:
             return
         for item in data:
@@ -44,7 +44,7 @@ class Film(CommonInfo):
 
 class Person(CommonInfo):
     @classmethod
-    def insert_data(cls, data):
+    def insert_data(cls, data=None):
         if not data:
             return
         for item in data:
