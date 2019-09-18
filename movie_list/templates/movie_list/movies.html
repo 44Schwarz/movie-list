@@ -5,12 +5,19 @@
     <title>Movies</title>
 </head>
 <body>
-    <ul>
+    <ol>
         {% for film in films %}
-            <li>{{ film.name }} - {{ film.date_updated }}</li>
+            <li><b>{{ film.name }}</b></li>
+            <ul>
+                {%  for person in film.cast.all %}
+                    <li>{{ person }}</li>
+                {% empty %}
+                    <p>(No information about the cast)</p>
+                {% endfor %}
+            </ul>
         {% empty %}
             <p>Movies are coming soon</p>
         {% endfor %}
-    </ul>
+    </ol>
 </body>
 </html>

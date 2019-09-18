@@ -14,14 +14,13 @@ class CommonInfo(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['-date_updated']
 
     def __str__(self):
         return self.name
 
     @staticmethod
-    def retrieve_data(url_part):
-        url = 'https://ghibliapi.herokuapp.com/{}/'.format(url_part)
+    def retrieve_data(url_part, base_url='https://ghibliapi.herokuapp.com/'):
+        url = base_url + url_part
         resp = requests.get(url)
         if resp.status_code != 200:
             return None
@@ -40,9 +39,23 @@ class CommonInfo(models.Model):
 
 
 class Film(CommonInfo):
-    pass
-    # cast = models.ManyToManyField('Person')
+    cast = models.ManyToManyField('Person')
 
 
 class Person(CommonInfo):
-    pass
+    @classmethod
+    def insert_data(cls, data):
+        if not data:
+            return
+        for item in data:
+            obj = cls(external_id=item.get('id'), name=item.get('name'))
+            obj.save()
+            for film_item in item.get('films'):
+                film_id = cls.retrieve_data(film_item, base_url='').get('id')
+                try:
+                    film_obj = Film.objects.get(pk=film_id)
+                except Film.DoesNotExist:  # If that film is not in our database
+                    continue
+                else:
+                    film_obj.cast.add(obj)
+                    film_obj.save()
