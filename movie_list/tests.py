@@ -59,4 +59,45 @@ class FilmTestCase(TestCase):
 
 class PersonTestCase(TestCase):
     def setUp(self):
-        pass  # TODO create Films
+        Film.objects.create(external_id='N1', name='Title 1')
+        Film.objects.create(external_id='N2', name='Title 2')
+        Film.objects.create(external_id='N3', name='Title 3')
+
+    @staticmethod
+    def create_person(external_id='P1', name='Name Surname'):
+        return Person.objects.create(external_id=external_id, name=name)
+
+    def test_insert_data(self):
+        people_list = [
+            {'id': 'P1', 'name': 'Name 1', 'films': []},
+            {'id': 'P2', 'name': 'Name 2', 'films': []},
+            {'id': 'P3', 'name': 'Name 3', 'films': []},
+        ]
+        Person.insert_data(people_list)
+        self.assertEqual(Person.objects.count(), len(people_list))
+
+    def test_model_relations(self):
+        film = Film.objects.get(pk='N3')
+        self.assertEqual(film.cast.count(), 0)
+
+        person = self.create_person()
+        film.cast.add(person)
+        film.save()
+        self.assertEqual(film.cast.count(), 1)
+
+        person2 = self.create_person(external_id='P2')
+        film.cast.add(person2)
+        film.save()
+        self.assertEqual(film.cast.count(), 2)
+
+    def test_double_cast(self):
+        film = Film.objects.get(pk='N3')
+        person = self.create_person()
+
+        film.cast.add(person)
+        film.save()
+        self.assertEqual(film.cast.count(), 1)
+
+        film.cast.add(person)
+        film.save()
+        self.assertEqual(film.cast.count(), 1)
