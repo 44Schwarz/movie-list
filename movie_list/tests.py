@@ -7,6 +7,10 @@ from .models import Person, Film
 
 # Create your tests here.
 class FilmTestCase(TestCase):
+    @staticmethod
+    def create_film(external_id='Id', name='Name'):
+        return Film.objects.create(external_id=external_id, name=name)
+
     def test_insert_data(self):
         films_list = [
             {'id': 'N1', 'title': 'Title 1', 'extra_info': 'Sth here'},
@@ -23,31 +27,31 @@ class FilmTestCase(TestCase):
         self.assertEqual(Film.objects.count(), 0)
 
     def test_object_representation(self):
-        f = Film.objects.create(external_id='Id', name='GoodFilm')
+        f = self.create_film(name='GoodFilm')
         self.assertEqual(str(f), 'GoodFilm')
 
     def test_duplicate_keys(self):
-        Film.objects.create(external_id='Id', name='Name')
+        self.create_film()
         with self.assertRaises(IntegrityError):
-            Film.objects.create(external_id='Id', name='Name')
+            self.create_film()
 
     def test_fields_size(self):
-        f = Film.objects.create(external_id='x' * 51, name='n')
+        f = self.create_film(external_id='x' * 51, name='n')
         with self.assertRaises(ValidationError):
             f.full_clean()
 
-        f = Film.objects.create(external_id='x', name='n' * 51)
+        f = self.create_film(external_id='x', name='n' * 51)
         with self.assertRaises(ValidationError):
             f.full_clean()
 
     def test_update_field(self):
-        f = Film.objects.create(external_id='N1', name='Name 1')
+        f = self.create_film(name='Name 1')
         Film.objects.filter(pk=f.pk).update(name='Name 2')
         f.refresh_from_db()
         self.assertEqual(f.name, 'Name 2')
 
     def test_time_to_update(self):
-        f = Film.objects.create(external_id='N1', name='Name 1')
+        f = self.create_film()
         self.assertFalse(f.time_to_update())
 
         from django.utils import timezone
