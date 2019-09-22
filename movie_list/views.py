@@ -9,8 +9,6 @@ from .models import Person, Film
 def index(request):
     f = Film.objects.order_by('-date_updated').first()
     if not f or f.time_to_update():
-        print('Time to update')
-
         data = Film.retrieve_data('films')
         Film.insert_data(data=data)
 

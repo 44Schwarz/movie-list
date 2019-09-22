@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 
 from .models import Person, Film
 
@@ -59,6 +60,15 @@ class FilmTestCase(TestCase):
         Film.objects.filter(pk=f.pk).update(date_updated=timezone.now() - timedelta(minutes=1))
         f.refresh_from_db()
         self.assertTrue(f.time_to_update())
+
+    def test_view(self):
+        film = self.create_film()
+
+        url = reverse('index')
+        resp = self.client.get(url)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(bytes(film.name.encode()), resp.content)
 
 
 class PersonTestCase(TestCase):
